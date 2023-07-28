@@ -137,7 +137,7 @@ export async function addLinkedInJobsToCache(
         );
 
         const job: JobData = {
-          id: jobKey,
+          key: jobKey,
           source: 'LINKEDIN',
           date,
           body: {
@@ -205,10 +205,9 @@ function getJobInfo($: cheerio.Root, jobCard: cheerio.Element) {
     .eq(0)
     .text()
     .trim();
-  const date = $(cardInfo)
-    .find('.job-search-card__listdate')
-    .eq(0)
-    .attr('datetime')!;
+  const date =
+    $(cardInfo).find('.job-search-card__listdate').eq(0).attr('datetime') ||
+    $(cardInfo).find('.job-search-card__listdate--new').eq(0).attr('datetime')!;
 
   return { title, company, location, date };
 }

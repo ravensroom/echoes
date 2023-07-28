@@ -101,6 +101,7 @@ type JobBody {
 
 model Job {
   id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  key       String  @unique
   userId    String
   date      String
   source    Source
@@ -110,9 +111,8 @@ model Job {
 }
 
 model Archive {
-  id        String  @id @default(auto()) @map("_id") @db.ObjectId
-  userId    String
-  name      String
-  isDefault Boolean
-  jobs      Job[]
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  userId String
+  name   String
+  jobs   Job[]
 }

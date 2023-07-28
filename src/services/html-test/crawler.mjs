@@ -1,18 +1,25 @@
 import axios from 'axios';
 import cheerio from 'cheerio';
+import { fileURLToPath } from 'url';
+import path from 'path';
+import { writeFile } from 'fs/promises';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const LINKEDIN_SEARCH__URL =
   'https://www.linkedin.com/jobs/search/?currentJobId=3553082764&f_TPR=r604800&keywords=software%20developer';
 
-async function get(url) {
-  const res = await axios.get(url);
-  console.log(res.data);
-}
-
 const testLinkedin = async (url) => {
   const response = await axios.get(url);
+  await writeFile(
+    `${__dirname}/linkedin/linkedin_search_result.html`,
+    response.data
+  );
+
   const $ = cheerio.load(response.data);
   const jobCards = $('.jobs-search__results-list .base-card');
+  const jobsData = [];
   for (let jobCard of jobCards) {
     const jobId = $(jobCard)?.attr('data-entity-urn')?.split(':').at(-1);
     if (!jobId) continue;
@@ -32,15 +39,20 @@ const testLinkedin = async (url) => {
       .eq(0)
       .text()
       .trim();
-    const date = $(cardInfo)
-      .find('.job-search-card__listdate')
-      .eq(0)
-      .attr('datetime');
+    const date =
+      $(cardInfo).find('.job-search-card__listdate').eq(0).attr('datetime') ||
+      $(cardInfo)
+        .find('.job-search-card__listdate--new')
+        .eq(0)
+        .attr('datetime');
+
     const jobData = { id: jobId, title, company, location, date };
-    console.log(jobData);
-    return;
+    jobsData.push(jobData);
   }
+  writeFile(
+    `${__dirname}/linkedin/linkedin_search_result.json`,
+    JSON.stringify(jobsData)
+  );
 };
 
-// get(LINKEDIN_SEARCH__URL);
 testLinkedin(LINKEDIN_SEARCH__URL);

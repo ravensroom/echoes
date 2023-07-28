@@ -11,6 +11,9 @@ import { signOut, useSession } from 'next-auth/react';
 
 const SEARCH_URL = '/api/job/search';
 const SEARCH_SIGNAL_URL = '/api/job/search/signal';
+const SAVE_TO_ARCHIVE_URL = '/api/job/save';
+
+const testArchiveId = '64c389d91e033d05c7a3b701';
 
 const config: ConfigData = {
   name: 'New Search',
@@ -107,6 +110,33 @@ const Page = () => {
     queryKey: ['scraper-finished-signal'],
   });
 
+  const { mutate: save } = useMutation({
+    mutationFn: async ({
+      archiveId,
+      job,
+    }: {
+      archiveId: string;
+      job: JobData;
+    }) => {
+      const { data } = await axios.post(
+        `${SAVE_TO_ARCHIVE_URL}?archiveId=${archiveId}`,
+        job
+      );
+      return data;
+    },
+    onError: (err: Error) => {
+      if (err instanceof AxiosError) {
+        if (err.response && err.response.status === 409) {
+          return toast.error('Job exists in this archive');
+        }
+      }
+      toast.error(err.message);
+    },
+    onSuccess: () => {
+      toast.success('job added');
+    },
+  });
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-between p-24">
       <div>
@@ -145,7 +175,23 @@ const Page = () => {
         <div>
           {isFetched &&
             jobs &&
-            jobs.map((job) => <li key={job.id}>{job.body.title}</li>)}
+            jobs.map((job) => (
+              <li key={job.id} className="flex justify-between">
+                <span>{job.body.title}</span>
+                <span>{job.date}</span>
+
+                <button
+                  onClick={() =>
+                    save({
+                      archiveId: testArchiveId,
+                      job,
+                    })
+                  }
+                >
+                  add to an archive
+                </button>
+              </li>
+            ))}
         </div>
       </div>
     </div>

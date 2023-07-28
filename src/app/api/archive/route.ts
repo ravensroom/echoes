@@ -1,7 +1,7 @@
 import { getAuthSession } from '@/lib/auth';
 import z from 'zod';
 import { db } from '@/lib/db';
-import { ConfigValidator } from '@/lib/validators/config';
+import { ArchiveValidator } from '@/lib/validators/archive';
 import { NextRequest } from 'next/server';
 import { Prisma } from '@prisma/client';
 
@@ -26,14 +26,14 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const config = ConfigValidator.parse(body);
-    const createdConfig = await db.config.create({
+    const { name } = ArchiveValidator.parse(body);
+    const createdArchive = await db.archive.create({
       data: {
         userId,
-        ...config,
+        name,
       },
     });
-    return new Response(JSON.stringify(createdConfig));
+    return new Response(JSON.stringify(createdArchive));
   } catch (err) {
     if (err instanceof z.ZodError) {
       return new Response(err.message, { status: 422 });
@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
     if (err instanceof Prisma.PrismaClientKnownRequestError) {
       console.log(err.code, err.message);
     }
-    return new Response('Internal server err', { status: 500 });
+    return new Response('Internal server error', { status: 500 });
   }
 }
 
@@ -66,35 +66,34 @@ export async function PATCH(req: NextRequest) {
     }
 
     const body = await req.json();
-    const config = ConfigValidator.parse(body);
+    const { id, name } = ArchiveValidator.parse(body);
 
-    if (!config.id) {
-      return new Response('Please include config id', { status: 422 });
+    if (!id) {
+      return new Response('Please include archive id', { status: 422 });
     }
 
-    const existingConfig = await db.config.findFirst({
+    const existingArchive = await db.archive.findFirst({
       where: {
-        id: config.id,
+        id,
         userId,
       },
     });
 
-    if (!existingConfig) {
-      return new Response('Config not found', { status: 404 });
+    if (!existingArchive) {
+      return new Response('Archive not found', { status: 404 });
     }
 
-    const updatedConfig = await db.config.update({
+    const updatedArchive = await db.archive.update({
       where: {
-        id: config.id,
+        id,
         userId,
       },
       data: {
-        name: config.name,
-        body: config.body,
+        name,
       },
     });
 
-    return new Response(JSON.stringify(updatedConfig));
+    return new Response(JSON.stringify(updatedArchive));
   } catch (err) {
     if (err instanceof z.ZodError) {
       return new Response(err.message, { status: 422 });
@@ -137,26 +136,26 @@ export async function GET(req: NextRequest) {
     const id = url.searchParams.get('id');
 
     if (id) {
-      const config = await db.config.findFirst({
+      const archive = await db.archive.findFirst({
         where: {
           id,
           userId,
         },
       });
 
-      if (!config) {
-        return new Response('Config not found', { status: 404 });
+      if (!archive) {
+        return new Response('Archive not found', { status: 404 });
       }
 
-      return new Response(JSON.stringify(config));
+      return new Response(JSON.stringify(archive));
     }
 
-    const configs = await db.config.findMany({
+    const archives = await db.archive.findMany({
       where: {
         userId,
       },
     });
-    return new Response(JSON.stringify(configs));
+    return new Response(JSON.stringify(archives));
   } catch (err) {
     if (err instanceof Prisma.PrismaClientKnownRequestError) {
       console.log(err.code, err.message);
@@ -192,28 +191,28 @@ export async function DELETE(req: NextRequest) {
     const id = url.searchParams.get('id');
 
     if (!id) {
-      return new Response('Please include a config id', { status: 422 });
+      return new Response('Please include a archive id', { status: 422 });
     }
 
-    const existingConfig = await db.config.findFirst({
+    const existingArchive = await db.archive.findFirst({
       where: {
         id,
         userId,
       },
     });
 
-    if (!existingConfig) {
+    if (!existingArchive) {
       return new Response('Config not found', { status: 404 });
     }
 
-    await db.config.delete({
+    await db.archive.delete({
       where: {
         id,
         userId,
       },
     });
 
-    return new Response('Config deleted successfully');
+    return new Response('Archive deleted successfully');
   } catch (err) {
     if (err instanceof Prisma.PrismaClientKnownRequestError) {
       console.log(err.code, err.message);
