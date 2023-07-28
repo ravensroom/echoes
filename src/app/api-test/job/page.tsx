@@ -112,15 +112,7 @@ const Page = () => {
       <div>
         <div className="flex flex-col gap-2">
           {session ? (
-            <button
-              onClick={(event) => {
-                event.preventDefault();
-                signOut({
-                  callbackUrl: `${window.location.origin}`,
-                });
-              }}
-              className={``}
-            >
+            <button onClick={() => signOut()} className={``}>
               Sign Out
             </button>
           ) : (
