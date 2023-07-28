@@ -91,3 +91,81 @@ export async function POST(req: NextRequest) {
     return new Response('Internal server error', { status: 500 });
   }
 }
+
+// delete a job from archive
+export async function DELETE(req: NextRequest) {
+  try {
+    // get userId
+    const session = await getAuthSession();
+    let userId;
+    if (session) {
+      userId = session.user.id;
+    } else {
+      const anonUserIdCookie = req.cookies.get('anon_userId');
+      if (!anonUserIdCookie || !anonUserIdCookie.value.startsWith('anon')) {
+        return new Response(
+          'Please provide an anon_userId in cookie or login',
+          {
+            status: 401,
+          }
+        );
+      }
+      userId = anonUserIdCookie.value;
+    }
+
+    // check archive
+    const url = new URL(req.url);
+    const archiveId = url.searchParams.get('archiveId');
+    const jobKey = url.searchParams.get('jobKey');
+
+    if (!archiveId) {
+      return new Response('Please provide an archive id', { status: 422 });
+    }
+
+    if (!jobKey) {
+      return new Response('Please provide a job key', { status: 422 });
+    }
+
+    const existingArchive = await db.archive.findFirst({
+      where: {
+        id: archiveId,
+        userId,
+      },
+    });
+
+    if (!existingArchive) {
+      return new Response('Archive not found', { status: 404 });
+    }
+
+    // check job
+    const existingJob = await db.job.findFirst({
+      where: {
+        key: jobKey,
+        userId,
+        archiveId,
+      },
+    });
+
+    if (!existingJob) {
+      return new Response('Job not found', { status: 404 });
+    }
+
+    await db.job.delete({
+      where: {
+        key: jobKey,
+        userId,
+        archiveId,
+      },
+    });
+
+    return new Response('Job deleted');
+  } catch (err) {
+    if (err instanceof z.ZodError) {
+      return new Response(err.message, { status: 422 });
+    }
+    if (err instanceof Prisma.PrismaClientKnownRequestError) {
+      console.log(err.code, err.message);
+    }
+    return new Response('Internal server error', { status: 500 });
+  }
+}

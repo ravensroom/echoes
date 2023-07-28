@@ -1,19 +1,20 @@
 'use client';
 
 import { ConfigData } from '@/lib/validators/config';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import axios, { AxiosError } from 'axios';
 import { useState } from 'react';
 import { JobData } from '@/lib/validators/job';
 import Link from 'next/link';
 import { toast } from 'react-hot-toast';
 import { signOut, useSession } from 'next-auth/react';
+import { create } from 'zustand';
 
 const SEARCH_URL = '/api/job/search';
 const SEARCH_SIGNAL_URL = '/api/job/search/signal';
 const SAVE_TO_ARCHIVE_URL = '/api/job/save';
 
-const testArchiveId = '64c389d91e033d05c7a3b701';
+const testArchiveId = '64c39d6ae4f5e3070bd51272';
 
 const config: ConfigData = {
   name: 'New Search',
@@ -30,8 +31,10 @@ const config: ConfigData = {
 };
 
 const Page = () => {
+  const q = useQueryClient();
   const [searchId, setSearchId] = useState('');
   const { data: session } = useSession();
+  const [jobs, setJobs] = useState<JobData[]>([]);
 
   const { mutate: search, isLoading: isSearching } = useMutation({
     mutationFn: async (config: ConfigData) => {
@@ -56,18 +59,17 @@ const Page = () => {
     },
   });
 
-  const {
-    data: jobs,
-    isFetched,
-    remove: cancelFetching,
-  } = useQuery({
+  const { remove: cancelFetching } = useQuery<JobData[]>({
     queryFn: async () => {
       const { data } = await axios.get(`${SEARCH_URL}?searchId=${searchId}`);
-      return data as JobData[];
+      return data;
     },
     enabled: !!searchId,
     refetchInterval: 50,
     queryKey: ['search-results'],
+    onSuccess: (data) => {
+      setJobs(data);
+    },
   });
 
   const { mutate: cancel, isLoading: iscancelling } = useMutation({
@@ -137,6 +139,27 @@ const Page = () => {
     },
   });
 
+  const { mutate: deleteFromArchive } = useMutation({
+    mutationFn: async ({
+      archiveId,
+      jobKey,
+    }: {
+      archiveId: string;
+      jobKey: string;
+    }) => {
+      const { data } = await axios.delete(
+        `${SAVE_TO_ARCHIVE_URL}?archiveId=${archiveId}&jobKey=${jobKey}`
+      );
+      return data;
+    },
+    onError: (err: Error) => {
+      toast.error(err.message);
+    },
+    onSuccess: () => {
+      toast.success('job removed');
+    },
+  });
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-between p-24">
       <div>
@@ -170,28 +193,50 @@ const Page = () => {
           >
             cancel
           </button>
+          <button
+            onClick={() => {
+              setJobs((prev) => []);
+            }}
+            className='p-2 bg-zinc-300 hover:bg-zinc-400 active:bg-zinc-500 rounded-sm"'
+          >
+            clear
+          </button>
         </div>
         <div>SearchId: {searchId}</div>
         <div>
-          {isFetched &&
-            jobs &&
-            jobs.map((job) => (
-              <li key={job.id} className="flex justify-between">
-                <span>{job.body.title}</span>
-                <span>{job.date}</span>
+          {jobs.map((job) => (
+            <li key={job.key} className="flex justify-between">
+              <span>{job.body.title}</span>
+              <button
+                onClick={() => {
+                  setJobs((prev) => prev.filter((j) => j.key !== job.key));
+                }}
+              >
+                delete
+              </button>
 
-                <button
-                  onClick={() =>
-                    save({
-                      archiveId: testArchiveId,
-                      job,
-                    })
-                  }
-                >
-                  add to an archive
-                </button>
-              </li>
-            ))}
+              <button
+                onClick={() =>
+                  save({
+                    archiveId: testArchiveId,
+                    job,
+                  })
+                }
+              >
+                add to an archive
+              </button>
+              <button
+                onClick={() =>
+                  deleteFromArchive({
+                    archiveId: testArchiveId,
+                    jobKey: job.key,
+                  })
+                }
+              >
+                delete from an archive
+              </button>
+            </li>
+          ))}
         </div>
       </div>
     </div>
