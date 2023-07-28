@@ -7,6 +7,7 @@ import GithubProvider from 'next-auth/providers/github';
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(db),
+  secret: process.env.NEXTAUTH_SECRET!,
   session: {
     strategy: 'jwt',
   },

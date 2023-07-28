@@ -100,13 +100,13 @@ type JobBody {
 }
 
 model Job {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId      String
-  publishedAt DateTime
-  source      Source
-  body        JobBody
-  archiveId   String   @db.ObjectId
-  archive     Archive  @relation(fields: [archiveId], references: [id])
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String
+  date      String
+  source    Source
+  body      JobBody
+  archiveId String  @db.ObjectId
+  archive   Archive @relation(fields: [archiveId], references: [id])
 }
 
 model Archive {
