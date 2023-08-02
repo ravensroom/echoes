@@ -1,25 +1,33 @@
 'use client';
 
+import {
+  ChatBubbleBottomCenterTextIcon,
+  HomeIcon,
+  MagnifyingGlassIcon,
+} from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import UserAccountNav from './UserAccountNav';
 import { usePathname } from 'next/navigation';
 import useUserId from '@/hooks/useUserId';
 
 const navLinkStyle =
-  'px-3 py-3 sm:px-10 font-semibold rounded-sm hover:cursor-pointer hover:text-zinc-800 text-zinc-600 hover:bg-zinc-100 ';
+  'px-3 py-3 sm:px-6 font-semibold rounded-sm hover:cursor-pointer hover:text-zinc-800 text-zinc-600 hover:bg-zinc-100 ';
 
 const navLinks = [
   {
     name: 'Home',
     href: '/',
+    icon: <HomeIcon className="h-6 w-6 " />,
   },
   {
     name: 'Search',
     href: '/search',
+    icon: <MagnifyingGlassIcon className="h-6 w-6" />,
   },
   {
     name: 'Forum',
     href: '/forum',
+    icon: <ChatBubbleBottomCenterTextIcon className="h-6 w-6" />,
   },
 ];
 
@@ -40,7 +48,7 @@ const Header = () => {
         </Link>
       </div>
 
-      <div className="flex">
+      <div className="flex items-center">
         {navLinks.map((link) => {
           const isActive = pathname === link.href;
           return (
@@ -51,7 +59,10 @@ const Header = () => {
                 isActive ? `border-b-2 border-zinc-800 text-zinc-800` : ''
               }`}
             >
-              {link.name}
+              <span className="inline-flex gap-2">
+                <span>{link.icon}</span>
+                <span className="hidden sm:inline-block">{link.name}</span>
+              </span>
             </Link>
           );
         })}
