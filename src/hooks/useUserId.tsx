@@ -1,16 +1,18 @@
 import { createId } from '@paralleldrive/cuid2';
 import { useSession } from 'next-auth/react';
+import type { Session } from 'next-auth';
 import { useEffect, useState } from 'react';
 import { useCookies } from 'react-cookie';
 
 interface UseUserIdHook {
   userId: String | undefined;
+  session: Session | null;
 }
 
 const useUserId = (): UseUserIdHook => {
   const { data: session } = useSession();
   const [cookies, setCookie, removeCookie] = useCookies(['anon_userId']);
-  const [userId, setUserId] = useState('');
+  const [userId, setUserId] = useState<string | undefined>();
 
   useEffect(() => {
     if (session) {
@@ -33,7 +35,7 @@ const useUserId = (): UseUserIdHook => {
     }
   }, [session, cookies.anon_userId, setCookie, removeCookie]);
 
-  return { userId };
+  return { userId, session };
 };
 
 export default useUserId;

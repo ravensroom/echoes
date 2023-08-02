@@ -1,12 +1,13 @@
-'use client';
+import { getAuthSession } from '@/lib/auth';
+import Greeting from '../components/root/Greeting';
 
-import useUserId from '@/hooks/useUserId';
-
-export default function Home() {
-  useUserId();
+export default async function Home() {
+  const session = await getAuthSession();
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      echoes
+    <main>
+      <div className="flex justify-center">
+        <Greeting />
+      </div>
     </main>
   );
 }
