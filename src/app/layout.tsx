@@ -1,11 +1,11 @@
 import Providers from '@/components/root/Providers';
 import './globals.css';
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Source_Serif_4 } from 'next/font/google';
 import { Toaster } from 'react-hot-toast';
 import Header from '@/components/root/Header';
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Source_Serif_4({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'Echoes',
@@ -29,7 +29,7 @@ export default function RootLayout({
           <Header />
 
           {authModal}
-          <div className="min-h-screen p-4 bg-gradient-to-br from-gray-200  via-gray-100 to-gray-200">
+          <div className="min-h-screen sm:p-4 bg-gradient-to-br from-zinc-800  via-zinc-700 to-zinc-800">
             {children}
           </div>
 
