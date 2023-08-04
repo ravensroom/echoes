@@ -13,8 +13,19 @@ import {
 import Input from './input/Input';
 import configAction from '../../_actions/configAction';
 import { toast } from 'react-hot-toast';
+import useSearchStore from '../../_stores/searchStore';
+import { useQuery } from '@tanstack/react-query';
+import searchAction from '../../_actions/searchAction';
 
-const Button = ({ title, onClick }: { title: string; onClick: () => void }) => {
+const Button = ({
+  title,
+  onClick,
+  children,
+}: {
+  title: string;
+  onClick: () => void;
+  children?: React.ReactNode;
+}) => {
   return (
     <button
       className="px-2 py-1 text-sm sm:text-base rounded-sm font-semibold text-zinc-200 bg-zinc-900 hover:bg-zinc-700 active:bg-zinc-600"
@@ -23,7 +34,7 @@ const Button = ({ title, onClick }: { title: string; onClick: () => void }) => {
         onClick();
       }}
     >
-      {title}
+      {children || title}
     </button>
   );
 };
@@ -35,6 +46,28 @@ const ConfigEditor = ({ config }: { config: ConfigData }) => {
     setFormData(config.body);
   }, [config]);
 
+  // Search handlers
+  const searchStore = useSearchStore();
+  const { remove: cancelFetching } = useQuery({
+    queryFn: () => searchAction.fetch(searchStore.searchId),
+    enabled: !!searchStore.searchId,
+    refetchInterval: 50,
+    queryKey: ['search-results'],
+    onSuccess: (data) => {
+      searchStore.setSearchResults(data);
+    },
+  });
+  useQuery({
+    queryFn: () => searchAction.getSearchFinished(searchStore.searchId),
+    enabled: !!searchStore.searchId,
+    refetchInterval: 2000,
+    onSuccess: (data) => {
+      if (data === '1') searchStore.rmSearchId();
+    },
+    queryKey: ['scraper-finished-signal'],
+  });
+
+  // Form data handlers
   const handleChange = (
     event: ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
@@ -173,7 +206,31 @@ const ConfigEditor = ({ config }: { config: ConfigData }) => {
               toast.success('Search config saved!');
             }}
           />
-          <Button title="Search" onClick={() => {}} />
+          <Button
+            title="Search"
+            onClick={async () => {
+              if (searchStore.searchId) {
+                cancelFetching();
+                searchAction.cancel(searchStore.searchId);
+                searchStore.rmSearchId();
+                return;
+              }
+              if (searchStore.searchResults) {
+                searchStore.rmSearchResults();
+              }
+              const searchId = await searchAction.start({
+                ...config,
+                body: formData,
+              });
+              searchStore.setSearchId(searchId);
+            }}
+          >
+            {searchStore.searchId ? (
+              <span className="running-dot font-bold"></span>
+            ) : (
+              'Search'
+            )}
+          </Button>
         </div>
       </form>
     </div>

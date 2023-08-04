@@ -41,7 +41,7 @@ const Input: React.FC<InputProps> = ({
   const handleAdd = () => {
     if (value.trim()) {
       if (name === 'priorityList') {
-        const isValid = /^[a-zA-Z]+:\d+$/.test(value);
+        const isValid = /^[a-zA-Z]+:(-?\d+)$/.test(value);
         if (!isValid) {
           toast.error('Invalid input');
           return;
@@ -53,6 +53,7 @@ const Input: React.FC<InputProps> = ({
   };
 
   const handleKeyEnter = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (name === 'location') return;
     if (event.key === 'Enter') {
       handleAdd();
     }
@@ -89,8 +90,8 @@ const Input: React.FC<InputProps> = ({
             }`}
             name={name}
             placeholder={placeholder}
-            value={value}
-            onKeyDown={name === 'location' ? () => {} : handleKeyEnter}
+            value={name === 'location' ? (data as string) : value}
+            onKeyDown={handleKeyEnter}
             onChange={
               name === 'location'
                 ? onChange

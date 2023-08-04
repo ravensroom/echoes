@@ -21,7 +21,7 @@ const navIconStyle = `h-5 w-5`;
 const navLinks = [
   {
     name: 'Home',
-    href: '/',
+    href: '/home',
     icon: <HomeIcon className={`${navIconStyle}`} />,
   },
   {
@@ -40,7 +40,7 @@ const Header = () => {
   const pathname = usePathname();
   const { session } = useUserId();
   return (
-    <div className="sticky top-0 w-full h-15 flex justify-between items-center sm:pl-10 sm:pr-5 pr-3 border-b-2 border-zinc-200 bg-zinc-50">
+    <div className="w-full h-15 flex justify-between items-center sm:pl-10 sm:pr-5 pr-3 border-b-2 border-zinc-200 bg-zinc-50">
       <div className={`flex`}>
         <Link href={'/'} className="text-lg font-bold px-2 text-gray-400">
           {`o))`}

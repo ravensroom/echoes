@@ -1,3 +1,33 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@keyframes pacman {
+  0% {
+    content: 'cooooo';
+  }
+  16.67% {
+    content: '-coooo';
+  }
+  33.33% {
+    content: '--cooo';
+  }
+  50% {
+    content: '---coo';
+  }
+  66.67% {
+    content: '----co';
+  }
+  83.33% {
+    content: '-----c';
+  }
+  100% {
+    content: 'Cooooo';
+  }
+}
+
+.running-dot::before {
+  font-weight: 'bold';
+  content: 'Cooooo';
+  animation: pacman 2s infinite;
+}
