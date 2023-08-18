@@ -1,4 +1,4 @@
-import SignIn from '@/components/auth/SignIn';
+import SignIn from '@/app/(shared)/_components/auth/SignIn';
 import Link from 'next/link';
 
 const page = ({}) => {

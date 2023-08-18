@@ -1,5 +1,5 @@
 import ConfigTabs from './_components/configs/ConfigTabs';
-import JobList from './_components/results/JobList';
+import JobList from './_components/results/SearchResultsList';
 
 const Page = () => {
   return (

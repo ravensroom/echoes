@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
 import JobItemActionButton from './JobItemActionButton';
 import { JobData } from '@/lib/validators/job';
+import JobArchiveMenu from './JobArchiveMenu';
 
 interface JobItemProps {
   job: JobData;
-  handleDelete: (key: string) => void;
+  handleDelete: () => void;
 }
 
 const JobItem: React.FC<JobItemProps> = ({ job, handleDelete }) => {
@@ -41,14 +42,6 @@ const JobItem: React.FC<JobItemProps> = ({ job, handleDelete }) => {
   //     window.removeEventListener('resize', updateHeaderOffsetTop);
   //   };
   // }, [headerRef.current?.offsetTop, isOpen]);
-
-  const handleMenuOpen = () => {
-    setMenuVisible(true);
-  };
-
-  const handleMenuClose = () => {
-    setMenuVisible(false);
-  };
 
   const handleClickOpen = () => {
     // window.scrollTo({
@@ -105,22 +98,20 @@ const JobItem: React.FC<JobItemProps> = ({ job, handleDelete }) => {
         <div className="flex flex-col text-sm h-full ml-1 bg-opacity-40 text-gray-700">
           <JobItemActionButton
             className="bg-indigo-300 hover:bg-indigo-400 active:bg-indigo-500"
-            onClick={() => {
-              handleDelete(job.key);
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDelete();
             }}
           >
             x
           </JobItemActionButton>
           <JobItemActionButton
             className="relative bg-purple-300 hover:bg-purple-400 active:bg-purple-500"
-            onMouseEnter={handleMenuOpen}
-            onMouseLeave={handleMenuClose}
-            onClick={(event: React.MouseEvent) => event.stopPropagation()}
+            onMouseEnter={() => setMenuVisible(true)}
+            onMouseLeave={() => setMenuVisible(false)}
+            onClick={(e) => e.stopPropagation()}
           >
-            +
-            {/* {menuVisible && (
-              <ArchiveMenu job={job} handleDelete={handleDelete} />
-            )} */}
+            +{menuVisible && <JobArchiveMenu job={job} />}
           </JobItemActionButton>
         </div>
       </div>

@@ -1,9 +1,9 @@
-import Providers from '@/components/root/Providers';
+import Providers from '@/app/(shared)/_components/root/Providers';
 import './globals.css';
 import type { Metadata } from 'next';
 import { Source_Serif_4 } from 'next/font/google';
 import { Toaster } from 'react-hot-toast';
-import Header from '@/components/root/Header';
+import Header from '@/app/(shared)/_components/root/Header';
 
 const inter = Source_Serif_4({ subsets: ['latin'] });
 

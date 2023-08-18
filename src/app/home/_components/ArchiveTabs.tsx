@@ -5,26 +5,15 @@ import {
   PencilSquareIcon,
   PlusIcon,
 } from '@heroicons/react/24/outline';
-import configAction from '../../_actions/configAction';
 import { useEffect, useState } from 'react';
-import ConfigEditor from './ConfigEditor';
-import { ConfigData } from '@/lib/validators/config';
 import NavElement from '@/app/(shared)/_components/tabs/NavElement';
+import { ArchiveData } from '@/lib/validators/archive';
+import archiveAction from '../_actions/archiveAction';
+import JobList from './JobList';
+import useArchiveStore from '@/app/(shared)/_stores/archiveStore';
 
-const configPlaceholder: ConfigData = {
-  name: 'new search',
-  body: {
-    location: 'united states',
-    timeRange: 'DAY',
-    listOfSearchKeywords: ['data scientist', 'machine learning engineer'],
-    titleIncludes: [],
-    titleExcludes: [],
-    priorityList: {
-      python: 100,
-      startup: 100,
-      onsite: -50,
-    },
-  },
+const archivePlaceholder: ArchiveData = {
+  name: 'new archive',
 };
 
 const navLinkBaseStyle =
@@ -49,55 +38,47 @@ const ActionLink = ({
   );
 };
 
-const ConfigTabs = () => {
-  const [configs, setConfigs] = useState<ConfigData[] | null>();
+const ArchiveTabs = () => {
+  const archiveStore = useArchiveStore();
   const [activeIndex, setActiveIndex] = useState(0);
   const [editModeIndex, setEditModeIndex] = useState<number | null>(null);
   const [shouldSaveEdit, setshouldSaveEdit] = useState(false);
 
   useEffect(() => {
-    configAction.getConfigs().then((data) => {
+    archiveAction.getArchives().then((data) => {
       if (data.length) {
-        setConfigs(data);
+        archiveStore.setArchives(data);
       } else {
-        configAction
-          .createConfig(configPlaceholder)
-          .then((createdFirstConfig) => {
-            setConfigs([createdFirstConfig]);
+        archiveAction
+          .createArchive(archivePlaceholder)
+          .then((createdFirstArchive) => {
+            archiveStore.setArchives([createdFirstArchive]);
           });
       }
     });
   }, []);
 
-  if (!configs) return null;
+  if (!archiveStore.archives) return null;
   return (
     <div className="flex flex-col rounded-sm border-2 border-t-0 border-r-0 border-zinc-300">
       {/* Tab navigation links */}
       <div className="flex">
         {/* Config navs */}
         <ul className="flex overflow-x-auto">
-          {configs.map((config, index) => (
+          {archiveStore.archives.map((archive, index) => (
             <NavElement
-              key={config.id}
-              label={config.name}
+              key={archive.id}
+              label={archive.name}
               saveEdit={(inputValue: string) => {
                 setEditModeIndex(null);
                 setshouldSaveEdit(false);
-                setConfigs((prevConfigs) =>
-                  prevConfigs!.map((config, i) => {
-                    if (i === index) {
-                      const updatedConfig = {
-                        ...config,
-                        name: inputValue,
-                      } as ConfigData & {
-                        id: string;
-                      };
-                      configAction.saveConfig(updatedConfig);
-                      return updatedConfig;
-                    }
-                    return config;
-                  })
-                );
+                const updatedArchive = {
+                  ...archive,
+                  id: archive.id!,
+                  name: inputValue,
+                };
+                archiveStore.updateArchive(updatedArchive);
+                archiveAction.saveArchive(updatedArchive);
               }}
               isActive={index === activeIndex}
               editMode={editModeIndex === index}
@@ -111,14 +92,12 @@ const ConfigTabs = () => {
         <ul className="flex">
           <ActionLink
             onClick={async () => {
-              const createdConfig = await configAction.createConfig({
-                ...configPlaceholder,
+              const createdArchive = await archiveAction.createArchive({
+                ...archivePlaceholder,
               });
-              setConfigs((prevConfigs) => {
-                const newConfigs = [...prevConfigs!, createdConfig];
-                setActiveIndex(newConfigs.length - 1);
-                return newConfigs;
-              });
+              const newArchives = [...archiveStore.archives, createdArchive];
+              archiveStore.setArchives(newArchives);
+              setActiveIndex(newArchives.length - 1);
             }}
           >
             <PlusIcon width={18} height={18} />
@@ -139,16 +118,11 @@ const ConfigTabs = () => {
           </ActionLink>
           <ActionLink
             onClick={() => {
-              if (configs.length <= 1) return;
-              const idToRemove = configs[activeIndex].id!;
-              setConfigs((prevConfigs) => {
-                const newConfigs = prevConfigs?.filter(
-                  (config) => config.id !== idToRemove
-                );
-                setActiveIndex(Math.max(activeIndex - 1, 0));
-                return newConfigs;
-              });
-              configAction.rmConfig(idToRemove);
+              if (archiveStore.archives.length <= 1) return;
+              const idToRemove = archiveStore.archives[activeIndex].id!;
+              archiveStore.rmArchive(idToRemove);
+              setActiveIndex(Math.max(activeIndex - 1, 0));
+              archiveAction.rmArchive(idToRemove);
             }}
           >
             <TrashIcon width={20} height={20} />
@@ -157,13 +131,13 @@ const ConfigTabs = () => {
         <div className="border-b-2 border-zinc-300 flex-grow"></div>
       </div>
       {/* Tab content */}
-      <div className="border-r-2 border-zinc-300">
-        {activeIndex >= 0 && activeIndex < configs?.length ? (
-          <ConfigEditor config={configs[activeIndex]} />
+      <div className="border-r-2 border-zinc-300 bg-zinc-200">
+        {activeIndex >= 0 && activeIndex < archiveStore.archives?.length ? (
+          <JobList archive={archiveStore.archives[activeIndex]} />
         ) : null}
       </div>
     </div>
   );
 };
 
-export default ConfigTabs;
+export default ArchiveTabs;

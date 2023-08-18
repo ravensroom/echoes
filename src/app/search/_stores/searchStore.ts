@@ -20,7 +20,7 @@ const useSearchStore = create<SearchStore>((set) => ({
   rmSearchResults: () => set({ searchResults: [] }),
   rmResult: (jobKey) =>
     set((state) => ({
-      searchResults: state.searchResults.filter((job) => job.key === jobKey),
+      searchResults: state.searchResults.filter((job) => job.key !== jobKey),
     })),
 }));
 

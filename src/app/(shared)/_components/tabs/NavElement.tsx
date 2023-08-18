@@ -44,9 +44,9 @@ const NavElement: React.FC<NavElementProps> = ({
   return (
     <li
       onClick={onClick}
-      className={`${
-        isActive ? 'bg-zinc-200 border-b-0' : 'bg-gray-400'
-      } ${className} `}
+      className={` ${className}  ${
+        isActive ? 'bg-zinc-200 border-b-transparent' : 'bg-gray-400'
+      }`}
     >
       {editMode && isActive ? (
         <input

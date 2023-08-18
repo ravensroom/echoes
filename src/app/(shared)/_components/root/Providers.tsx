@@ -1,6 +1,6 @@
 'use client';
 
-import useUserId from '@/hooks/useUserId';
+import useUserId from '@/app/(shared)/_hooks/useUserId';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { SessionProvider } from 'next-auth/react';
 import { CookiesProvider } from 'react-cookie';

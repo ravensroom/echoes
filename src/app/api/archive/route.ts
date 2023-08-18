@@ -32,6 +32,9 @@ export async function POST(req: NextRequest) {
         userId,
         name,
       },
+      include: {
+        jobs: true,
+      },
     });
     return new Response(JSON.stringify(createdArchive));
   } catch (err) {
@@ -90,6 +93,9 @@ export async function PATCH(req: NextRequest) {
       },
       data: {
         name,
+      },
+      include: {
+        jobs: true,
       },
     });
 
@@ -154,6 +160,9 @@ export async function GET(req: NextRequest) {
       where: {
         userId,
       },
+      include: {
+        jobs: true,
+      },
     });
     return new Response(JSON.stringify(archives));
   } catch (err) {
@@ -199,10 +208,21 @@ export async function DELETE(req: NextRequest) {
         id,
         userId,
       },
+      include: {
+        jobs: true,
+      },
     });
 
     if (!existingArchive) {
       return new Response('Config not found', { status: 404 });
+    }
+
+    for (const job of existingArchive.jobs) {
+      await db.job.delete({
+        where: {
+          id: job.id,
+        },
+      });
     }
 
     await db.archive.delete({

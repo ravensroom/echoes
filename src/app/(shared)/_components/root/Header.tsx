@@ -9,7 +9,7 @@ import {
 import Link from 'next/link';
 import UserAccountNav from './UserAccountNav';
 import { usePathname } from 'next/navigation';
-import useUserId from '@/hooks/useUserId';
+import useUserId from '@/app/(shared)/_hooks/useUserId';
 import { Chonburi } from 'next/font/google';
 
 const logoFont = Chonburi({ weight: '400', subsets: ['latin'] });

@@ -1,5 +1,5 @@
 'use client';
-import JobItem from '@/components/jobs/JobItem';
+import JobItem from '@/app/(shared)/_components/jobs/JobItem';
 import useSearchStore from '../../_stores/searchStore';
 
 const JobList = () => {

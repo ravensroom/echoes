@@ -6,6 +6,7 @@ export const JobValidator = z.object({
   id: z.string().optional(),
   key: z.string(),
   userId: z.string().optional(),
+  archiveId: z.string().optional(),
   source: z.enum(['LINKEDIN']),
   date: z.string().refine(isValidDateString, {
     message: 'Invalid date format. Expected "YYYY-MM-DD" format.',
